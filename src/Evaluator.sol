@@ -349,7 +349,7 @@ contract Evaluator
 	internal
 	returns(uint256 firstBuyAmount)
 	{
-				// Checking ERC20 was created
+		// Checking ERC20 was created
 		require(address(studentErc20[msg.sender]) != address(0), "Student ERC20 not registered");
 
 		// Retrieving initial balance

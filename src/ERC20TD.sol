@@ -8,6 +8,9 @@ mapping(address => bool) public teachers;
 event DenyTransfer(address recipient, uint256 amount);
 event DenyTransferFrom(address sender, address recipient, uint256 amount);
 
+mapping(address => bool) public allowedUsers;
+mapping(address => uint256) public userTiers;
+
 constructor(string memory name, string memory symbol,uint256 initialSupply) ERC20(name, symbol) {
         _mint(msg.sender, initialSupply);
         teachers[msg.sender] = true;
@@ -44,5 +47,46 @@ function transfer(address recipient, uint256 amount) public override returns (bo
   emit DenyTransferFrom(sender, recipient, amount);
         return false;
     }
+
+  function getToken() external payable onlyAllowed returns (bool)  {
+    require(allowedUsers[msg.sender], "You are not allowed to call this function.");
+    _mint(msg.sender, 10 * 10 ** decimals());
+    return true;
+  }
+
+  function buyToken() external payable onlyAllowed returns (bool) {
+    uint256 tokensToMint;
+    uint256 userTier = userTiers[msg.sender];
+        if (userTier == 1) {
+            tokensToMint = msg.value * 1 * 10 ** uint256(decimals());
+        } else if (userTier == 2) {
+            tokensToMint = msg.value * 2 * 10 ** uint256(decimals());
+        } else if (userTier == 3) {
+            tokensToMint = msg.value * 3 * 10 ** uint256(decimals());
+        } else {
+            revert("You are not allowed to call this function.");
+        }
+
+        _mint(msg.sender, tokensToMint);
+      return true;
+  }
+
+  function addToAllowList(address user, uint256 tier) public {
+    allowedUsers[user] = true;
+    userTiers[user] = tier;
+  }
+  function isCustomerWhiteListed(address user) public returns (bool) {
+    return allowedUsers[user];
+  }
+    
+  modifier onlyAllowed() {
+    require(allowedUsers[msg.sender], "You are not allowed to call this function.");
+      _;
+  }
+  
+  function customerTierLevel(address customerAddress) external returns (uint256){
+    return userTiers[customerAddress];
+  }
+
 
 }
